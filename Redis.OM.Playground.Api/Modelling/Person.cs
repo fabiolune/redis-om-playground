@@ -7,7 +7,7 @@ public record Person
 {
     [RedisIdField]
     [Indexed]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.CreateVersion7();
 
     [Indexed] public string? FirstName { get; set; }
 

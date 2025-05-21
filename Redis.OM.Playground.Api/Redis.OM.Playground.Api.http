@@ -1,6 +1,15 @@
 @Redis.OM.Playground.Api_HostAddress = http://localhost:5000
 
-GET {{Redis.OM.Playground.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+GET {{Redis.OM.Playground.Api_HostAddress}}/internal/description/
+Accept: */*
 
 ###
+
+POST {{Redis.OM.Playground.Api_HostAddress}}/person
+Content-Type: application/json
+Accept: application/json
+
+{
+  "firstName": "fabio",
+  "lastName": "lonegro"
+}
