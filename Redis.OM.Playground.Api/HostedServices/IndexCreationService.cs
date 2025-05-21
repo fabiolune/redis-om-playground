@@ -1,26 +1,30 @@
 ﻿using Redis.OM.Contracts;
 using Redis.OM.Playground.Api.Modelling;
-using TinyFp;
+using static TinyFp.Prelude;
 using TinyFp.Extensions;
+using TinyFp;
 
 namespace Redis.OM.Playground.Api.HostedServices;
 
 public class IndexCreationService(IRedisConnectionProvider provider) : IHostedService
 {
-    private readonly IRedisConnectionProvider _provider = provider;
+    private readonly IRedisConnection _connection = provider.Connection;
     private static readonly Type PersonType = typeof(Person);
 
-    //=> _provider.Connection.CreateIndexAsync(typeof(Person));
-    public Task StartAsync(CancellationToken cancellationToken) => 
-        _provider
-            .Connection
-            .GetIndexInfoAsync(PersonType)
-            .ToOptionAsync()
-            .MapAsync(i => i!)
-            .MatchAsync(i => _provider.Connection.IsIndexCurrentAsync(PersonType).ToOptionAsync(b => b).MapAsync(_ => i), Option<RedisIndexInfo>.None)
-            .MatchAsync(i => _provider.Connection.DropIndexAsync(PersonType).ToOptionAsync(), Option<bool>.None)
-            .MatchAsync(_ => Unit.Default, () => Unit.Default)
-            .MapAsync(_ => _provider.Connection.CreateIndexAsync(PersonType));
+    private Task<Unit> CreateIndex() => _connection.CreateIndexAsync(PersonType).ToTaskUnit<bool>();
+
+    private Task<Unit> DropAndCreateIndex() => 
+        _connection
+            .DropIndexAsync(PersonType)
+            .MapAsync(_ => _connection.CreateIndexAsync(PersonType))
+            .ToTaskUnit<bool>();
+
+    public Task StartAsync(CancellationToken cancellationToken) =>
+        TryAsync(() => _connection.GetIndexInfoAsync(PersonType))
+            .Match(
+                info => _connection.IsIndexCurrentAsync(PersonType).ToOptionAsync(b => !b)
+                    .MatchAsync(_ => Unit.Default, () => DropAndCreateIndex()),
+                _ => CreateIndex());
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

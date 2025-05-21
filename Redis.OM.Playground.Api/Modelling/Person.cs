@@ -9,9 +9,11 @@ public record Person
     [Indexed]
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
-    [Indexed] public string? FirstName { get; set; }
+    [Searchable]
+    public string? FirstName { get; set; }
 
-    [Indexed] public string? LastName { get; set; }
+    [Searchable]
+    public string? LastName { get; set; }
 
     [Indexed] public int Age { get; set; }
 

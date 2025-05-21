@@ -2,6 +2,7 @@
 using Redis.OM.Contracts;
 using Redis.OM.Playground.Api.Infrastructure;
 using Redis.OM.Playground.Api.Modelling;
+using System.Linq.Expressions;
 using TinyFp;
 using TinyFp.Extensions;
 
@@ -13,7 +14,8 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
         app
             .Tee(a => a.MapPost("/person", Add))
             .Tee(a => a.MapGet("/person/{id}", GetById))
-            .Tee(a => a.MapGet("/person", Get));
+            .Tee(a => a.MapGet("/person", Get))
+            .Tee(a => a.MapGet("/person/search", Search));
 
     private Task<IResult> Add([FromBody] Person? person) =>
         person.ToOption()
@@ -31,7 +33,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
 
     private Task<IResult> Get([FromQuery] string? firstName, [FromQuery] string? lastName) =>
         provider.RedisCollection<Person>()
-            .Where(p => p.FirstName == firstName && p.LastName == lastName)
+            .Where(CreatePredicate(firstName, lastName))
             .ToListAsync()
             .ToOptionAsync()
             .MatchAsync(
@@ -39,4 +41,20 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
                     .Map(l => new DataContainer<IList<Person>>(l))
                     .Match(Results.Ok, c => c), 
                 () => Results.StatusCode(StatusCodes.Status400BadRequest));
+
+    private static Expression<Func<Person, bool>> CreatePredicate(string? firstName, string? lastName) =>
+        (firstName, lastName) switch
+        {
+            (not null, not null) => p => p.FirstName == firstName && p.LastName == lastName,
+            (not null, null)     => p => p.FirstName == firstName,
+            (null, not null)     => p => p.LastName == lastName,
+            _                    => p => p.FirstName != null // dynamic way to express a "false" and allow the code to properly parse the expression
+        };
+
+    private Task<IResult> Search([FromQuery] string? q) =>
+        q.ToOption(string.IsNullOrWhiteSpace)
+            .Map(q => q!).AsTask()
+            .MatchAsync(q => provider.RedisCollection<Person>().Raw(q).ToListAsync().ToOptionAsync(), Option<IList<Person>>.None)
+            .MapAsync(l => new DataContainer<IList<Person>>(l))
+            .MatchAsync(d => Results.Ok(d), () => Results.StatusCode(StatusCodes.Status400BadRequest));
 }
