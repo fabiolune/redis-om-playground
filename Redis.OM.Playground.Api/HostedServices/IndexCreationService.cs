@@ -1,8 +1,8 @@
 ﻿using Redis.OM.Contracts;
 using Redis.OM.Playground.Api.Modelling;
-using static TinyFp.Prelude;
-using TinyFp.Extensions;
 using TinyFp;
+using TinyFp.Extensions;
+using static TinyFp.Prelude;
 
 namespace Redis.OM.Playground.Api.HostedServices;
 
@@ -13,7 +13,7 @@ public class IndexCreationService(IRedisConnectionProvider provider) : IHostedSe
 
     private Task<Unit> CreateIndex() => _connection.CreateIndexAsync(PersonType).ToTaskUnit<bool>();
 
-    private Task<Unit> DropAndCreateIndex() => 
+    private Task<Unit> DropAndCreateIndex() =>
         _connection
             .DropIndexAsync(PersonType)
             .MapAsync(_ => _connection.CreateIndexAsync(PersonType))

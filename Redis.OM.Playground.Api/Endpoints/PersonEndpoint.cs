@@ -39,16 +39,16 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .MatchAsync(
                 r => r.ToEither(Results.NotFound())
                     .Map(l => new DataContainer<IList<Person>>(l))
-                    .Match(Results.Ok, c => c), 
+                    .Match(Results.Ok, c => c),
                 () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
     private static Expression<Func<Person, bool>> CreatePredicate(string? firstName, string? lastName) =>
         (firstName, lastName) switch
         {
             (not null, not null) => p => p.FirstName == firstName && p.LastName == lastName,
-            (not null, null)     => p => p.FirstName == firstName,
-            (null, not null)     => p => p.LastName == lastName,
-            _                    => p => p.FirstName != null // dynamic way to express a "false" and allow the code to properly parse the expression
+            (not null, null) => p => p.FirstName == firstName,
+            (null, not null) => p => p.LastName == lastName,
+            _ => p => p.FirstName != null // dynamic way to express a "false" and allow the code to properly parse the expression
         };
 
     private Task<IResult> Search([FromQuery] string? q) =>

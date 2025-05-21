@@ -11,6 +11,6 @@ public static class RedisConfigurationExtensions
             .Get<RedisConfiguration>()
             .ToOption(c => c is null || c.ConnectionString is null)
             .Match(
-                c => services.AddSingleton<IRedisConnectionProvider>(new RedisConnectionProvider(c!.ConnectionString!)), 
+                c => services.AddSingleton<IRedisConnectionProvider>(new RedisConnectionProvider(c!.ConnectionString!)),
                 () => throw new InvalidOperationException("Redis connection string is not configured."));
 }
