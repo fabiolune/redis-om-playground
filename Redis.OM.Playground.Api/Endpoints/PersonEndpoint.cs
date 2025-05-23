@@ -30,8 +30,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .Where(p => p.Id == id)
             .FirstOrDefaultAsync()
             .ToOptionAsync()
-            .MatchAsync(r => r.ToEither(Results.StatusCode(StatusCodes.Status400BadRequest))
-                .Match(Results.Ok, c => c), () => Results.NotFound());
+            .MatchAsync(Results.Ok, () => Results.NotFound());
 
     private Task<IResult> Get([FromQuery] string? firstName, [FromQuery] string? lastName) =>
         CreateOptionalPredicate(firstName, lastName)
