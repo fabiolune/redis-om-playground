@@ -1,0 +1,11 @@
+branches:
+  main:
+    regex: ^master$|^main$
+    mode: ContinuousDelivery
+    label: alpha
+    increment: Minor
+    track-merge-target: true
+    source-branches: []
+    tracks-release-branches: true
+    is-release-branch: false
+    pre-release-weight: 0
