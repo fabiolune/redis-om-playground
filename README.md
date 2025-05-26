@@ -86,7 +86,7 @@ private Task<IResult> GetById([FromRoute] Guid id) =>
 1. Run the setup script:
 
 ```bash
-chmod +x run.sh
+chmod +x *run*.sh
 ./run.sh
 ```
 
