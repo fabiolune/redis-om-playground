@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-om-playground
+  name: redis-om-playground
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-om-playground
+  template:
+    metadata:
+      labels:
+        app: redis-om-playground
+    spec:
+      containers:
+      - image: localhost:5001/redis-om-playground:latest
+        imagePullPolicy: Always
+        name: redis-om-playground
+        env:
+        - name: RedisConfiguration__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              key: connection-string
+              name: redis-authentication
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: redis-om-playground
+          mountPath: /app/appsettings.json
+          subPath: appsettings.json
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: redis-om-playground
+        configMap:
+          name: redis-om-playground-appsettings

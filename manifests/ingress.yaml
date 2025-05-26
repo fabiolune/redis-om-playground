@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: redis-om-playground
+  name: redis-om-playground
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - backend:
+              service:
+                name: redis-om-playground
+                port:
+                  name: http
+            path: /<pathbase>
+            pathType: Prefix

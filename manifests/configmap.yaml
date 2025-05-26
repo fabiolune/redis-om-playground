@@ -1,0 +1,18 @@
+apiVersion: v1
+data:
+  appsettings.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "RoutingConfiguration": {
+        "PathBase": "/<pathbase>"
+      },
+      "AllowedHosts": "*"
+    }
+kind: ConfigMap
+metadata:
+  name: redis-om-playground-appsettings
