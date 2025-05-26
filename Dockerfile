@@ -35,7 +35,7 @@ RUN --mount=type=cache,target=/root/.nuget/packages dotnet publish \
 
 RUN mv /app/out/appsettings.json /app/out/template.appsettings.json && \
   rm -f /app/out/appsettings*.json && \
-  jq -e 'del(.RedisConfiguration)' /app/out/template.appsettings.json > /app/out/appsettings.json &&
+  jq -e 'del(.RedisConfiguration)' /app/out/template.appsettings.json > /app/out/appsettings.json
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-alpine
 
