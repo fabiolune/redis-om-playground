@@ -116,8 +116,8 @@ To clean up the environment:
 
 ## Technology Stack
 
-- .NET 8.0
-- Redis Stack (Redis + RedisJSON + RediSearch)
+- .NET 9.0
+- Redis OS (Redis + RedisJSON + RediSearch)
 - Redis OM for .NET
 - TinyFp[^1] (Functional programming library)
 - Docker & Kubernetes
