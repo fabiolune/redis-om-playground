@@ -345,9 +345,7 @@ connection_string="redis-cluster-headless:6379,password=${redis_password},abortC
 $k create secret generic redis-authentication \
     --from-literal connection-string="${connection_string}"
 
-cat ./manifests/configmap.yaml | sed 's/<pathbase>/'${PREFIX}'/g' | $k apply -f -
-
-$k apply -f manifests/deployment.yaml
+cat ./manifests/deployment.yaml | sed 's/<pathbase>/'${PREFIX}'/g' | $k apply -f -
 $k wait \
   --for=condition=ready pod \
   --selector=app=redis-om-playground \

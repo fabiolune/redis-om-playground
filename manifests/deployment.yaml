@@ -24,12 +24,10 @@ spec:
             secretKeyRef:
               key: connection-string
               name: redis-authentication
+        - name: RoutingConfiguration__PathBase
+          value: "/<pathbase>"  # Replace <pathbase> with the actual path base
         ports:
         - containerPort: 8080
-        volumeMounts:
-        - name: redis-om-playground
-          mountPath: /app/appsettings.json
-          subPath: appsettings.json
         resources:
           requests:
             cpu: 10m
@@ -37,7 +35,3 @@ spec:
           limits:
             cpu: 200m
             memory: 256Mi
-      volumes:
-      - name: redis-om-playground
-        configMap:
-          name: redis-om-playground-appsettings
