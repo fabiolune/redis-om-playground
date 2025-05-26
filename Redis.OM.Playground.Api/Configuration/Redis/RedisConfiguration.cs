@@ -1,4 +1,4 @@
-﻿namespace Redis.OM.Playground.Api.Configuration;
+﻿namespace Redis.OM.Playground.Api.Configuration.Redis;
 
 public record RedisConfiguration
 {
