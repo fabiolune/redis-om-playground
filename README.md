@@ -64,6 +64,7 @@ private Task<IResult> GetById([FromRoute] Guid id) =>
         .ToOptionAsync()
         .MatchAsync(Results.Ok, () => Results.NotFound());
 ```
+
 > example of using TinyFp with minimal API
 
 ### Redis OM Features
