@@ -380,8 +380,8 @@ search_users_with_statement() {
     exit 1
   fi
 
-  count_fn_1=$(echo "$raw_search_results" | jq "[.[] | select(.firstName == \"$fn_1\") ] | length")
-  count_fn_2=$(echo "$raw_search_results" | jq "[.[] | select(.firstName == \"$fn_2\") ] | length")
+  count_fn_1=$(echo "$raw_search_results" | jq "[.data | .[] | select(.firstName == \"$fn_1\") ] | length")
+  count_fn_2=$(echo "$raw_search_results" | jq "[.data | .[] | select(.firstName == \"$fn_2\") ] | length")
 
   if [ "$count_fn_1" -lt 1 ]; then
     error "No user found with firstName = $fn_1"
