@@ -365,3 +365,35 @@ create_and_check_user "$firstname_1" "$lastname_1" "$statement"
 firstname_2=$(random_string 8)
 lastname_2=$(random_string 8)
 create_and_check_user "$firstname_2" "$lastname_2" "$statement"
+
+search_users_with_statement() {
+  local fn_1=$1
+  local fn_2=$2
+  local st=$(echo $3 | sed 's/ /\+/g')
+
+  local raw_search_results=$(curl -s -H 'Content-Type: application/json' \
+    "${BASE_PATH}/person/search?q=${st}")
+
+  if ! echo "$raw_search_results" | jq -e . >/dev/null 2>&1; then
+    error "Invalid JSON response for search:"
+    echo "$raw_search_results"
+    exit 1
+  fi
+
+  count_fn_1=$(echo "$raw_search_results" | jq "[.[] | select(.firstName == \"$fn_1\") ] | length")
+  count_fn_2=$(echo "$raw_search_results" | jq "[.[] | select(.firstName == \"$fn_2\") ] | length")
+
+  if [ "$count_fn_1" -lt 1 ]; then
+    error "No user found with firstName = $fn_1"
+    exit 1
+  fi
+
+  if [ "$count_fn_2" -lt 1 ]; then
+    error "No user found with firstName = $fn_2"
+    exit 1
+  fi
+
+  info "✅ Both users with firstName $fn_1 and $fn_2 found in search results"
+}
+
+search_users_with_statement $firstname_1 $firstname_2 $statement
