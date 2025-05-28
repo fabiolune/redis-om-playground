@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Diagnostics;
 using Redis.OM.Playground.Api.Configuration.Redis;
 using Redis.OM.Playground.Api.Configuration.Routing;
 using Redis.OM.Playground.Api.Endpoints.Extensions;
