@@ -9,8 +9,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
     <PackageReference Include="Redis.OM" Version="1.0.0" />
-    <PackageReference Include="Scrutor" Version="6.0.1" />
-    <PackageReference Include="tiny-fp" Version="2.1.1" />
+    <PackageReference Include="Scrutor" Version="6.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Redis.OM.Playground.ServiceDefaults\Redis.OM.Playground.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>
