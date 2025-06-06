@@ -3,7 +3,6 @@ using Redis.OM.Contracts;
 using Redis.OM.Playground.Api.Infrastructure;
 using Redis.OM.Playground.Api.Modelling;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using TinyFp;
 using TinyFp.Extensions;
 

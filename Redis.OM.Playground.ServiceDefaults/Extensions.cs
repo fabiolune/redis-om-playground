@@ -53,7 +53,7 @@ public static class Extensions
                     .ToOption(string.IsNullOrWhiteSpace)
                     .OnSome(_ => b.Services.AddOpenTelemetry().UseOtlpExporter()));
 
-    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder => 
+    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder =>
         builder
             .Tee(b => b.Services.AddHealthChecks().AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]));
 

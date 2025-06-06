@@ -8,7 +8,7 @@ const int RedisPort = 6379;
 await DistributedApplication
     .CreateBuilder()
     .Map(b => (builder: b, redis: b.AddRedisOs(RedisName, port: RedisPort).WithRedisInsight()))
-    .Map(t => 
+    .Map(t =>
         t.builder
             .Tee(b =>
                 b.AddProject<Projects.Redis_OM_Playground_Api>(ApiName)
