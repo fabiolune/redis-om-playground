@@ -42,7 +42,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .MapAsync(l => new DataContainer<IList<Person>>(l))
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
-    #pragma warning disable CS8655 // The switch expression does not need to handle the (null, null) case because the 'ToOption' above is already excluding it
+#pragma warning disable CS8655 // The switch expression does not need to handle the (null, null) case because the 'ToOption' above is already excluding it
     private static Option<Expression<Func<Person, bool>>> CreateOptionalPredicate(string? firstName, string? lastName) =>
         (firstName, lastName)
             .ToOption(t => t.firstName is null && t.lastName is null)
