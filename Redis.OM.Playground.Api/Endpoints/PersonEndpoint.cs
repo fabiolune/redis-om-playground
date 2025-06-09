@@ -19,7 +19,8 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .Tee(a => a.MapGet("/person/{id}", GetById))
             .Tee(a => a.MapGet("/person", Get))
             .Tee(a => a.MapGet("/person/search", Search))
-            .Tee(a => a.MapGet("/person/list", List));
+            .Tee(a => a.MapGet("/person/list", List))
+            .Tee(a => a.MapGet("/person/count", Count));
 
     private Task<IResult> Add([FromBody] Person? person) =>
         person.ToOption()
@@ -41,6 +42,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .MapAsync(l => new DataContainer<IList<Person>>(l))
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
+    #pragma warning disable CS8655 // The switch expression does not need to handle the (null, null) case because the 'ToOption' above is already excluding it
     private static Option<Expression<Func<Person, bool>>> CreateOptionalPredicate(string? firstName, string? lastName) =>
         (firstName, lastName)
             .ToOption(t => t.firstName is null && t.lastName is null)
@@ -50,6 +52,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
                 (not null, null) => p => p.FirstName == t.firstName,
                 (null, not null) => p => p.LastName == t.lastName,
             });
+#pragma warning restore CS8655 // The switch expression does not handle some null inputs.
 
     private Task<IResult> Search([FromQuery(Name = "q")] string? query) =>
         query.ToOption(string.IsNullOrWhiteSpace)
@@ -58,11 +61,17 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .MapAsync(l => new DataContainer<IList<Person>>(l))
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
-    private Task<IResult> List([FromQuery(Name = "p")] int page = 1, [FromQuery(Name = "s")] int pageSize = 10) =>
-        (page, pageSize)
-            .ToOption(t => t.page <= 0 || t.pageSize <= 0 || pageSize > MaxPageSize)
-            .Map(t => _provider.RedisCollection<Person>(t.pageSize).Skip((page - 1) * pageSize).Take(pageSize))
+    private Task<IResult> List([FromQuery(Name = "p")] int page = 1, [FromQuery(Name = "s")] int limit = 10) =>
+        (page, limit)
+            .ToOption(t => t.page <= 0 || t.limit <= 0 || limit > MaxPageSize)
+            .Map(t => _provider.RedisCollection<Person>(t.limit).Skip((page - 1) * limit).Take(limit))
             .MapAsync(c => c.ToListAsync())
             .MapAsync(l => new DataContainer<IList<Person>>(l))
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
+
+    private Task<IResult> Count() =>
+        _provider
+            .RedisCollection<Person>()
+            .CountAsync()
+            .MapAsync(c => Task.FromResult(Results.Ok(new DataContainer<int>(c))));
 }

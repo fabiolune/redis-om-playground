@@ -17,7 +17,7 @@ public record Person
 
     [Indexed] public int Age { get; set; }
 
-    [Searchable] public string? PersonalStatement { get; set; }
+    [Searchable] public string PersonalStatement { get; set; } = string.Empty;
 
     [Indexed] public string[] Skills { get; set; } = [];
 

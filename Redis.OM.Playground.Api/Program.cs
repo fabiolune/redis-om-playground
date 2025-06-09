@@ -7,10 +7,13 @@ using Redis.OM.Playground.ServiceDefaults;
 using System.Reflection;
 using TinyFp.Extensions;
 
+const string CorsPolicyName = "AllowAny";
+
 await WebApplication
     .CreateBuilder()
     .Tee(b =>
         b.Services
+            .AddCors(options => options.AddPolicy(CorsPolicyName, b => b.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()))
             .AddRoutingConfiguration(b.Configuration)
             .AddRedisConfiguration(b.Configuration, "RedisOs")
             .AddExceptionHandler<InternalServerExceptionHandler>()
@@ -20,6 +23,7 @@ await WebApplication
             .AddEndpointDefinitions(Assembly.GetEntryAssembly()!))
     .AddServiceDefaults()
     .Build()
+    .Tee(b => b.UseCors(CorsPolicyName))
     .Tee(a => a.UseExceptionHandler())
     .UseRoutingBasePath()
     .UseEndpointDefinitions()
