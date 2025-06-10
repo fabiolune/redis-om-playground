@@ -47,7 +47,7 @@ validate_value() {
   if [ "$result" == "true" ]; then
       info "✅ Validation passed: '$key' correctly set to '$expected_value'"
   else
-      echo "❌ Validation failed: '$key' correctly is not set to '$expected_value'"
+      echo "❌ Validation failed: '$key' is not set to '$expected_value'"
       exit 1
   fi
 }
@@ -247,7 +247,7 @@ EOF
 
 fullSemVer=$(docker run --rm -it -v $(pwd):/repo gittools/gitversion /repo | sed "1s/.*/\{/" | jq -r '.FullSemVer')
 
-docker build . -t redis-om-playground:${fullSemVer} -t localhost:5001/redis-om-playground:${fullSemVer} -t localhost:5001/redis-om-playground:latest
+docker build . -t redis-om-playground:${fullSemVer} -t localhost:5001/redis-om-playground:${fullSemVer} -t localhost:5001/redis-om-playground:latest -f Api.Dockerfile
 
 docker push localhost:5001/redis-om-playground:${fullSemVer}
 docker push localhost:5001/redis-om-playground:latest

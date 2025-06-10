@@ -19,7 +19,7 @@ spec:
         imagePullPolicy: Always
         name: redis-om-playground
         env:
-        - name: RedisConfiguration__ConnectionString
+        - name: ConnectionStrings__RedisOs
           valueFrom:
             secretKeyRef:
               key: connection-string

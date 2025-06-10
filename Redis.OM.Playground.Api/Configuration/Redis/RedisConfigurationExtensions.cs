@@ -5,7 +5,7 @@ using TinyFp.Extensions;
 
 namespace Redis.OM.Playground.Api.Configuration.Redis;
 
-[ExcludeFromCodeCoverage(Justification = "Initialization code that manages a connection to an actual Reids instance")]
+[ExcludeFromCodeCoverage(Justification = "Initialization code that manages a connection to an actual Redis instance")]
 public static class RedisConfigurationExtensions
 {
     public static IServiceCollection AddRedisConfiguration(this IServiceCollection services, IConfiguration configuration, string name) =>

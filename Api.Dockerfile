@@ -9,18 +9,20 @@ WORKDIR /app
 COPY *.sln .
 
 COPY ./Redis.OM.Playground.Api/Redis.OM.Playground.Api.csproj ./Redis.OM.Playground.Api/Redis.OM.Playground.Api.csproj
+COPY ./Redis.OM.Playground.ServiceDefaults/Redis.OM.Playground.ServiceDefaults.csproj ./Redis.OM.Playground.ServiceDefaults/Redis.OM.Playground.ServiceDefaults.csproj
 
-RUN --mount=type=cache,target=/root/.nuget/packages dotnet restore \
-  --runtime linux-musl-x64
+RUN --mount=type=cache,target=/root/.nuget/packages dotnet restore Redis.OM.Playground.ServiceDefaults/Redis.OM.Playground.ServiceDefaults.csproj --runtime linux-musl-x64
+RUN --mount=type=cache,target=/root/.nuget/packages dotnet restore Redis.OM.Playground.Api/Redis.OM.Playground.Api.csproj --runtime linux-musl-x64
 
-COPY . .
+COPY Redis.OM.Playground.Api/ Redis.OM.Playground.Api/
+COPY Redis.OM.Playground.ServiceDefaults/ Redis.OM.Playground.ServiceDefaults/
 
 ARG buildConfiguration=Release
 
 ARG version=0.0.0
 
 RUN --mount=type=cache,target=/root/.nuget/packages dotnet build \
-  *.sln \
+  Redis.OM.Playground.Api/Redis.OM.Playground.Api.csproj \
   -c ${buildConfiguration} \
   --no-restore
 
