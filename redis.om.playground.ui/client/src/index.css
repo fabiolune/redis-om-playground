@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 11% 98%; /* #F5F7FA */
+  --foreground: 224 14% 9%; /* #1A1D23 */
+  --muted: 210 11% 96%; /* #F1F3F5 */
+  --muted-foreground: 215 8% 47%; /* #6B7280 */
+  --popover: 0 0% 100%; /* #FFFFFF */
+  --popover-foreground: 224 14% 9%; /* #1A1D23 */
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 224 14% 9%; /* #1A1D23 */
+  --border: 214 12% 88%; /* #E2E8F0 */
+  --input: 214 12% 88%; /* #E2E8F0 */
+  --primary: 243 75% 59%; /* #6366F1 */
+  --primary-foreground: 210 100% 99%; /* #FEFEFE */
+  --secondary: 210 11% 96%; /* #F1F3F5 */
+  --secondary-foreground: 224 14% 9%; /* #1A1D23 */
+  --accent: 210 11% 96%; /* #F1F3F5 */
+  --accent-foreground: 224 14% 9%; /* #1A1D23 */
+  --destructive: 0 84% 60%; /* #EF4444 */
+  --destructive-foreground: 60 9% 98%; /* #FEFEFE */
+  --ring: 243 75% 59%; /* #6366F1 */
+  --radius: 0.5rem;
+  
+  /* Chart colors */
+  --chart-1: 243 75% 59%; /* #6366F1 */
+  --chart-2: 271 81% 56%; /* #8B5CF6 */
+  --chart-3: 335 78% 42%; /* #EC4899 */
+  --chart-4: 348 83% 47%; /* #EF4444 */
+  --chart-5: 43 96% 56%; /* #F59E0B */
+  
+  /* Sidebar colors */
+  --sidebar-background: 0 0% 100%; /* #FFFFFF */
+  --sidebar-foreground: 224 14% 9%; /* #1A1D23 */
+  --sidebar-primary: 243 75% 59%; /* #6366F1 */
+  --sidebar-primary-foreground: 210 100% 99%; /* #FEFEFE */
+  --sidebar-accent: 210 11% 96%; /* #F1F3F5 */
+  --sidebar-accent-foreground: 224 14% 9%; /* #1A1D23 */
+  --sidebar-border: 214 12% 88%; /* #E2E8F0 */
+  --sidebar-ring: 243 75% 59%; /* #6366F1 */
+}
+
+.dark {
+  --background: 224 14% 9%; /* #1A1D23 */
+  --foreground: 210 11% 98%; /* #F5F7FA */
+  --muted: 223 13% 15%; /* #262A32 */
+  --muted-foreground: 215 8% 65%; /* #9CA3AF */
+  --popover: 224 14% 9%; /* #1A1D23 */
+  --popover-foreground: 210 11% 98%; /* #F5F7FA */
+  --card: 224 14% 9%; /* #1A1D23 */
+  --card-foreground: 210 11% 98%; /* #F5F7FA */
+  --border: 223 13% 20%; /* #374151 */
+  --input: 223 13% 20%; /* #374151 */
+  --primary: 243 75% 59%; /* #6366F1 */
+  --primary-foreground: 210 100% 99%; /* #FEFEFE */
+  --secondary: 223 13% 15%; /* #262A32 */
+  --secondary-foreground: 210 11% 98%; /* #F5F7FA */
+  --accent: 223 13% 15%; /* #262A32 */
+  --accent-foreground: 210 11% 98%; /* #F5F7FA */
+  --destructive: 0 62% 30%; /* #DC2626 */
+  --destructive-foreground: 210 11% 98%; /* #F5F7FA */
+  --ring: 243 75% 59%; /* #6366F1 */
+  
+  /* Sidebar colors for dark mode */
+  --sidebar-background: 224 14% 9%; /* #1A1D23 */
+  --sidebar-foreground: 210 11% 98%; /* #F5F7FA */
+  --sidebar-primary: 243 75% 59%; /* #6366F1 */
+  --sidebar-primary-foreground: 210 100% 99%; /* #FEFEFE */
+  --sidebar-accent: 223 13% 15%; /* #262A32 */
+  --sidebar-accent-foreground: 210 11% 98%; /* #F5F7FA */
+  --sidebar-border: 223 13% 20%; /* #374151 */
+  --sidebar-ring: 243 75% 59%; /* #6366F1 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+}
+
+@layer utilities {
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
