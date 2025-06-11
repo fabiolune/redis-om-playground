@@ -16,7 +16,6 @@ RUN npm run build_client
 COPY --from=httpd /home/static ./
 
 RUN mv httpd.conf dist/public/httpd.conf
-RUN sed -i 's|/assets|\./assets|g' dist/public/index.html
 
 FROM lipanski/docker-static-website:2.4.0 AS static
 USER static
