@@ -1,0 +1,9 @@
+apiVersion: v1
+metadata:
+  name: redis-om-playground-ui
+data:
+  configuration: |
+    {
+      "apiBaseUrl": "<apibaseurl>"
+    }
+kind: ConfigMap

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: redis-om-playground-ui
+  name: redis-om-playground-ui
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: redis-om-playground-ui
+  sessionAffinity: None
+  type: ClusterIP

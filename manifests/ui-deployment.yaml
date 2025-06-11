@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-om-playground-ui
+  name: redis-om-playground-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-om-playground-ui
+  template:
+    metadata:
+      labels:
+        app: redis-om-playground-ui
+    spec:
+      containers:
+      - image: localhost:5001/redis-om-playground-ui:latest
+        imagePullPolicy: Always
+        name: redis-om-playground-ui
+        volumeMounts:
+        - mountPath: /home/static/configuration
+          name: redis-om-playground-ui
+          subPath: configuration
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      volumes:
+      - name: redis-om-playground-ui
+        configMap:
+          name: redis-om-playground-ui

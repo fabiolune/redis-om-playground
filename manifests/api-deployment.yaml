@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: redis-om-playground
-  name: redis-om-playground
+    app: redis-om-playground-api
+  name: redis-om-playground-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis-om-playground
+      app: redis-om-playground-api
   template:
     metadata:
       labels:
-        app: redis-om-playground
+        app: redis-om-playground-api
     spec:
       containers:
-      - image: localhost:5001/redis-om-playground:latest
+      - image: localhost:5001/redis-om-playground-api:latest
         imagePullPolicy: Always
-        name: redis-om-playground
+        name: redis-om-playground-api
         env:
         - name: ConnectionStrings__RedisOs
           valueFrom:

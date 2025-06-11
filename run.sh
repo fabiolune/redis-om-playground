@@ -4,10 +4,18 @@
 # The script then creates a redis cluster and delivers the redis-om-playground app and runs some integration tests
 # Usage: ./run.sh  
 
+skip_build=false
+if [ "$1" == "--skip-build" ]; then
+  skip_build=true
+fi
+
 CLUSTER_PORT=80
 CLUSTER_NAME=test-kind
-PREFIX=playground
-BASE_PATH="http://localhost:${CLUSTER_PORT}/${PREFIX}"
+
+API_PREFIX=api
+API_BASE_PATH="http://localhost:${CLUSTER_PORT}/${API_PREFIX}"
+
+UI_BASE_PATH="http://localhost:${CLUSTER_PORT}"
 
 BLUE='\033[1;34m'
 RED='\033[0;31m'
@@ -110,7 +118,7 @@ create_and_check_user() {
 
   info "Creating user with first name: $firstname, last name: $lastname, personal statement: '$statement'"
 
-  raw_person=$(curl -s ${BASE_PATH}/person \
+  raw_person=$(curl -s ${API_BASE_PATH}/person \
     -H 'Content-Type: application/json' \
     -d "{
         \"firstName\": \"${firstname}\",
@@ -121,7 +129,7 @@ create_and_check_user() {
 
   echo "Person ID: $person_id"
 
-  person=$(curl -s -H 'Content-Type: application/json' ${BASE_PATH}/person/${person_id})
+  person=$(curl -s -H 'Content-Type: application/json' ${API_BASE_PATH}/person/${person_id})
 
   if ! echo "$person" | jq -e . >/dev/null 2>&1; then
     error "Invalid JSON response for person:"
@@ -142,7 +150,7 @@ search_users_with_statement() {
   local st=$(echo $3 | sed 's/ /\+/g')
 
   local raw_search_results=$(curl -s -H 'Content-Type: application/json' \
-    "${BASE_PATH}/person/search?q=${st}")
+    "${API_BASE_PATH}/person/search?q=${st}")
 
   if ! echo "$raw_search_results" | jq -e . >/dev/null 2>&1; then
     error "Invalid JSON response for search:"
@@ -247,10 +255,25 @@ EOF
 
 fullSemVer=$(docker run --rm -it -v $(pwd):/repo gittools/gitversion /repo | sed "1s/.*/\{/" | jq -r '.FullSemVer')
 
-docker build . -t redis-om-playground:${fullSemVer} -t localhost:5001/redis-om-playground:${fullSemVer} -t localhost:5001/redis-om-playground:latest -f Api.Dockerfile
+if [ "$skip_build" = true ]; then
+  info "Skipping build step as requested"
+else
+  info "Building images with fullSemVer: $fullSemVer"
+  docker build . \
+    -t redis-om-playground-api:${fullSemVer} \
+    -t localhost:5001/redis-om-playground-api:${fullSemVer} \
+    -t localhost:5001/redis-om-playground-api:latest -f Api.Dockerfile
 
-docker push localhost:5001/redis-om-playground:${fullSemVer}
-docker push localhost:5001/redis-om-playground:latest
+  docker build . \
+    -t redis-om-playground-ui:${fullSemVer} \
+    -t localhost:5001/redis-om-playground-ui:${fullSemVer} \
+    -t localhost:5001/redis-om-playground-ui:latest -f UI.Dockerfile
+
+  docker push localhost:5001/redis-om-playground-api:${fullSemVer}
+  docker push localhost:5001/redis-om-playground-ui:${fullSemVer}
+  docker push localhost:5001/redis-om-playground-api:latest
+  docker push localhost:5001/redis-om-playground-ui:latest
+fi
 
 # --------------------------------------
 # Tests execution
@@ -375,16 +398,31 @@ connection_string="redis-cluster-headless:6379,password=${redis_password},abortC
 $k create secret generic redis-authentication \
     --from-literal connection-string="${connection_string}"
 
-cat ./manifests/deployment.yaml | sed 's/<pathbase>/'${PREFIX}'/g' | $k apply -f -
+info "Install API"
+
+cat ./manifests/api-deployment.yaml | sed 's/<pathbase>/'${API_PREFIX}'/g' | $k apply -f -
 $k wait \
   --for=condition=ready pod \
-  --selector=app=redis-om-playground \
+  --selector=app=redis-om-playground-api \
   --timeout=90s
 
-$k apply -f ./manifests/service.yaml
-cat ./manifests/ingress.yaml | sed 's/<pathbase>/'${PREFIX}'/g' | $k apply -f -
+$k apply -f ./manifests/api-service.yaml
+cat ./manifests/api-ingress.yaml | sed 's/<pathbase>/'${API_PREFIX}'/g' | $k apply -f -
 
-validate_status_code "$BASE_PATH/internal/description" 200
+info "Test API is reachable"
+validate_status_code "$API_BASE_PATH/internal/description" 200
+
+info "Install UI"
+
+set -e
+
+cat ./manifests/ui-configmap.yaml | sed 's|<apibaseurl>|'${API_BASE_PATH}'|g' | $k apply -f -
+$k apply -f ./manifests/ui-deployment.yaml
+$k apply -f ./manifests/ui-service.yaml
+$k apply -f ./manifests/ui-ingress.yaml
+
+info "Test UI is reachable"
+validate_status_code "$UI_BASE_PATH/index.html" 200
 
 statement="Lorem ipsum dolor sit amet"
 

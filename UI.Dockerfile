@@ -1,46 +1,29 @@
-# Build stage
-FROM node:23.9-slim AS build
+FROM lipanski/docker-static-website:2.4.0 AS httpd
+
+FROM node:23.9-alpine AS build
 
 WORKDIR /app
 
-# Copy package files first for better layer caching
 COPY redis.om.playground.ui/package*.json ./
 
-# Install all dependencies (including devDependencies for build)
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --cache /root/.npm
 
-# Copy source code
 COPY redis.om.playground.ui/ ./
 
-# Build the application
-RUN npm run build
+RUN npm run build_client
 
-# # Runtime stage
-# FROM node:20-alpine AS runtime
+COPY --from=httpd /home/static ./
 
-# WORKDIR /app
+RUN mv httpd.conf dist/public/httpd.conf
+RUN sed -i 's|/assets|\./assets|g' dist/public/index.html
 
-# # Copy package files
-# COPY redis.om.playground.ui/package*.json ./
+FROM lipanski/docker-static-website:2.4.0 AS static
+USER static
+HEALTHCHECK NONE
 
-# # Install only production dependencies
-# RUN --mount=type=cache,target=/root/.npm \
-#     npm ci --only=production --cache /root/.npm && \
-#     npm install -g serve
+WORKDIR /home/static
 
-# # Copy built application from build stage
-# COPY --from=build /app/dist ./dist
+COPY --from=build /app/dist/public ./
 
-# # Create non-root user
-# RUN addgroup -g 1001 -S nodejs && \
-#     adduser -S nextjs -u 1001 && \
-#     chown -R nextjs:nodejs /app
-
-# USER nextjs
-
-# # Expose port
-# EXPOSE 3000
-
-# # Serve the application
-# CMD ["serve", "-s", "dist", "-l", "3000"]
+EXPOSE 3000
