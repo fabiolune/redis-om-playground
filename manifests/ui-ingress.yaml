@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   labels:
     app: redis-om-playground-ui
-  name: redis-om-playground-ui
+  name: redis-om-playground-ui-assets
 spec:
   ingressClassName: nginx
   rules:
@@ -15,5 +15,48 @@ spec:
                 name: redis-om-playground-ui
                 port:
                   name: http
-            path: /
+            path: /assets
             pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: redis-om-playground-ui
+  name: redis-om-playground-ui-configuration
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - backend:
+              service:
+                name: redis-om-playground-ui
+                port:
+                  name: http
+            path: /configuration
+            pathType: Prefix
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /index.html
+  labels:
+    app: redis-om-playground-ui
+  name: redis-om-playground-ui-routes
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - backend:
+              service:
+                name: redis-om-playground-ui
+                port:
+                  name: http
+            path: /(.*)
+            pathType: ImplementationSpecific
+            
