@@ -390,9 +390,10 @@ rm $temp_values
 
 info "Create secret to store redis connection string"
 
-set -e
 
 $k delete secret redis-authentication > /dev/null 2>&1
+
+set -e
 
 redis_password=$($k get secret redis-cluster -o jsonpath="{.data.redis-password}" | base64 --decode)
 connection_string="redis-cluster-headless:6379,password=${redis_password},abortConnect=false"
