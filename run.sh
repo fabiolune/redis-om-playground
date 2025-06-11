@@ -12,7 +12,7 @@ fi
 CLUSTER_PORT=80
 CLUSTER_NAME=test-kind
 
-API_PREFIX=api
+API_PREFIX=person-api
 API_BASE_PATH="http://localhost:${CLUSTER_PORT}/${API_PREFIX}"
 
 UI_BASE_PATH="http://localhost:${CLUSTER_PORT}"
