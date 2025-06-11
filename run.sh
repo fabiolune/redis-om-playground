@@ -390,6 +390,8 @@ rm $temp_values
 
 info "Create secret to store redis connection string"
 
+set -e
+
 $k delete secret redis-authentication > /dev/null 2>&1
 
 redis_password=$($k get secret redis-cluster -o jsonpath="{.data.redis-password}" | base64 --decode)
@@ -413,8 +415,6 @@ info "Test API is reachable"
 validate_status_code "$API_BASE_PATH/internal/description" 200
 
 info "Install UI"
-
-set -e
 
 cat ./manifests/ui-configmap.yaml | sed 's|<apibaseurl>|'${API_BASE_PATH}'|g' | $k apply -f -
 $k apply -f ./manifests/ui-deployment.yaml
