@@ -75,14 +75,25 @@ private Task<IResult> GetById([FromRoute] Guid id) =>
 
 ## Running the Project
 
-### Prerequisites
+### `dotnet `Aspire
+
+The solution uses dotnet Aspire to orchestrate the development and spin up the proper dependencies.
+From a `windows` ou can run the application by executing
+
+```shell
+dotnet run --project .\Redis.OM.Playground.AppHost\Redis.OM.Playground.AppHost.csproj
+```
+
+The same result can be obtained opening the [redis-om-playground.sln](redis-om-playground.sln) solution with VisualStudio and launching the `Redis.OM.Playground.AppHost` project.
+
+### Integration tests
+
+Prerequisites:
 
 - Docker
 - kubectl
 - Helm
 - Kind (Kubernetes in Docker)
-
-### Local Development
 
 1. Run the setup script:
 
@@ -98,17 +109,15 @@ This will:
 - Build and deploy the application
 - Execute integration tests to verify functionality
 
-### Integration Tests
-
-The integration tests in run.sh verify:
+The integration tests in [run.sh](run.sh) verify:
 
 - Creation of person records
 - Retrieval of person records by ID
 - Search functionality
 
-## Clean Up
+#### Clean Up
 
-To clean up the environment:
+To clean up the integration testing environment:
 
 ```bash
 ./stop.sh
