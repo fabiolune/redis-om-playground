@@ -18,6 +18,9 @@ spec:
       - image: localhost:5001/redis-om-playground-ui:latest
         imagePullPolicy: Always
         name: redis-om-playground-ui
+        env:
+        - name: TIMESTAMP
+          value: "<timestamp>" # Replace <timestamp> with the actual timestamp
         volumeMounts:
         - mountPath: /home/static/configuration
           name: redis-om-playground-ui

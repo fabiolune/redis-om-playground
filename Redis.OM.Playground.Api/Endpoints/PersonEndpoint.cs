@@ -22,7 +22,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .Tee(a => a.MapGet("/person", Get))
             .Tee(a => a.MapGet("/person/search", Search))
             .Tee(a => a.MapGet("/person/list", List))
-            .Tee(a => a.MapGet("/person/count", Count));
+            .Tee((Action<WebApplication>)(a => a.MapGet("/person/count", GetCount)));
 
     private Task<IResult> Add([FromBody] Person? person) =>
         person.ToOption()
@@ -83,17 +83,22 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .MapAsync(l => new DataContainer<IList<Person>>(l))
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
-    private Task<IResult> List([FromQuery(Name = "p")] int page = 1, [FromQuery(Name = "s")] int limit = 10) =>
-        (page, limit)
-            .ToOption(t => t.page <= 0 || t.limit <= 0 || limit > MaxPageSize)
-            .Map(t => _provider.RedisCollection<Person>(t.limit).Skip((page - 1) * limit).Take(limit))
+    private Task<IResult> List([FromQuery(Name = "page")] int page = 1, [FromQuery(Name = "limit")] int pageSize = 10) =>
+        (page, pageSize)
+            .ToOption(t => t.page <= 0 || t.pageSize <= 0 || pageSize > MaxPageSize)
+            .Map(t => _provider.RedisCollection<Person>(t.pageSize).Skip((page - 1) * pageSize).Take(pageSize))
             .MapAsync(c => c.ToListAsync())
-            .MapAsync(l => new DataContainer<IList<Person>>(l))
+            .MatchAsync(async l => 
+                new PaginatedDataContainer<Person>(l, page, pageSize, await Count())
+                    .ToOption(), 
+                Option<PaginatedDataContainer<Person>>.None)
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
-    private Task<IResult> Count() =>
+    private Task<int> Count() =>
         _provider
             .RedisCollection<Person>()
-            .CountAsync()
-            .MapAsync(c => Task.FromResult(Results.Ok(new DataContainer<int>(c))));
+            .CountAsync();
+
+    private Task<IResult> GetCount() =>
+        Count().MapAsync(c => Task.FromResult(Results.Ok(new DataContainer<int>(c))));
 }

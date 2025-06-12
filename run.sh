@@ -388,9 +388,10 @@ connection_string="redis-cluster-headless:6379,password=${redis_password},abortC
 $k create secret generic redis-authentication \
     --from-literal connection-string="${connection_string}"
 
+timestamp=$(date +%s%N | cut -b1-13)
 info "Install API"
 
-cat ./manifests/api-deployment.yaml | sed 's/<pathbase>/'${API_PREFIX}'/g' | $k apply -f -
+cat ./manifests/api-deployment.yaml | sed 's/<pathbase>/'${API_PREFIX}'/g' | sed 's/<timestamp>/'${timestamp}'/g' | $k apply -f -
 $k wait \
   --for=condition=ready pod \
   --selector=app=redis-om-playground-api \
@@ -404,10 +405,16 @@ validate_status_code "$API_BASE_PATH/internal/description" 200
 
 info "Install UI"
 
+
 cat ./manifests/ui-configmap.yaml | sed 's|<apibaseurl>|'${API_BASE_PATH}'|g' | $k apply -f -
-$k apply -f ./manifests/ui-deployment.yaml
+cat ./manifests/ui-deployment.yaml | sed 's|<timestamp>|'${timestamp}'|g' | $k apply -f -
 $k apply -f ./manifests/ui-service.yaml
 $k apply -f ./manifests/ui-ingress.yaml
+
+$k wait \
+  --for=condition=ready pod \
+  --selector=app=redis-om-playground-ui \
+  --timeout=90s
 
 info "Test UI is reachable"
 validate_status_code "$UI_BASE_PATH/index.html" 200

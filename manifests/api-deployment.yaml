@@ -26,6 +26,8 @@ spec:
               name: redis-authentication
         - name: RoutingConfiguration__PathBase
           value: "/<pathbase>"  # Replace <pathbase> with the actual path base
+        - name: TIMESTAMP
+          value: "<timestamp>" # Replace <timestamp> with the actual timestamp
         ports:
         - containerPort: 8080
         resources:
