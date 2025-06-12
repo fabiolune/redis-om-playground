@@ -18,6 +18,7 @@ API_BASE_PATH="http://localhost:${CLUSTER_PORT}/${API_PREFIX}"
 UI_BASE_PATH="http://localhost:${CLUSTER_PORT}"
 
 BLUE='\033[1;34m'
+GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
@@ -33,8 +34,12 @@ info() {
   log "${BLUE}[INFO]${NC} $@"
 }
 
+success() {
+  log "${GREEN}[SUCCESS]${NC} $@"
+}
+
 error() {
-  log "${RED}[ERROR]${NC} $@"
+  >&2 log "${RED}[ERROR]${NC} $@"
 }
 
 validate_variable() {
@@ -52,9 +57,7 @@ validate_value() {
   expected_value=$3
   result=$(docker run --rm -i imega/jq -e '.'$key' == "'$expected_value'"' <<< "$json")
 
-  if [ "$result" == "true" ]; then
-      info "✅ Validation passed: '$key' correctly set to '$expected_value'"
-  else
+  if [ ! "$result" = "true" ]; then
       echo "❌ Validation failed: '$key' is not set to '$expected_value'"
       exit 1
   fi
@@ -92,7 +95,7 @@ validate_status_code() {
     sleep 1
     status_code=$(curl -i -s -o /dev/null -w "%{http_code}" $url)
     if [[ $status_code = $expected_code ]]; then
-      info "✅ The http call to '$url' correctly returned status code $expected_code"
+      success "SThe http call to '$url' correctly returned status code $expected_code"
       break
     else
       if [[ "$retries" = "$i" ]]; then
@@ -103,54 +106,34 @@ validate_status_code() {
   done
 }
 
-random_string() {
-  local length=$1
-  if [ -z "$length" ]; then
-    length=8
-  fi
-  dd if=/dev/urandom bs=1 count=$length 2>/dev/null | base64 | tr -d -- '\n' | tr -- '+/' '-_' ; echo
-}
-
 create_and_check_user() {
-  local firstname=$1
-  local lastname=$2
+  local first_name=$1
+  local last_name=$2
   local statement=$3
-
-  info "Creating user with first name: $firstname, last name: $lastname, personal statement: '$statement'"
 
   raw_person=$(curl -s ${API_BASE_PATH}/person \
     -H 'Content-Type: application/json' \
     -d "{
-        \"firstName\": \"${firstname}\",
-        \"lastName\": \"${lastname}\",
+        \"firstName\": \"${first_name}\",
+        \"lastName\": \"${last_name}\",
         \"personalStatement\": \"${statement}\"
     }")
   person_id=$(echo $raw_person | cut -d':' -f2 | cut -d'"' -f1)
-
-  echo "Person ID: $person_id"
 
   person=$(curl -s -H 'Content-Type: application/json' ${API_BASE_PATH}/person/${person_id})
 
   if ! echo "$person" | jq -e . >/dev/null 2>&1; then
     error "Invalid JSON response for person:"
-    echo $person
+    error "$person"
     exit 1
   fi
-
-  echo $person | jq
   
   validate_value "$person" "id" "$person_id"
-  validate_value "$person" "firstName" "$firstname"
-  validate_value "$person" "lastName" "$lastname"
-}
-
-search_users_with_statement() {
-  local fn_1=$1
-  local fn_2=$2
-  local st=$(echo $3 | sed 's/ /\+/g')
+  validate_value "$person" "firstName" "$first_name"
+  validate_value "$person" "lastName" "$last_name"
 
   local raw_search_results=$(curl -s -H 'Content-Type: application/json' \
-    "${API_BASE_PATH}/person/search?q=${st}")
+    "${API_BASE_PATH}/person/search?q=${first_name}")
 
   if ! echo "$raw_search_results" | jq -e . >/dev/null 2>&1; then
     error "Invalid JSON response for search:"
@@ -158,20 +141,26 @@ search_users_with_statement() {
     exit 1
   fi
 
-  count_fn_1=$(echo "$raw_search_results" | jq "[.data | .[] | select(.firstName == \"$fn_1\") ] | length")
-  count_fn_2=$(echo "$raw_search_results" | jq "[.data | .[] | select(.firstName == \"$fn_2\") ] | length")
+  count=$(echo "$raw_search_results" | jq "[.data | .[] | select(.firstName == \"$first_name\") | select(.id == \"$person_id\") ] | length")
 
-  if [ "$count_fn_1" -lt 1 ]; then
-    error "No user found with firstName = $fn_1"
+  if [ "$count" -lt 1 ]; then
+    error "No user found with firstName = $first_name"
     exit 1
   fi
 
-  if [ "$count_fn_2" -lt 1 ]; then
-    error "No user found with firstName = $fn_2"
+  echo $person_id
+}
+
+delete_user() {
+  local person_id=$1
+  response=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE ${API_BASE_PATH}/person/${person_id})
+
+  if [ "$response" != "202" ]; then
+    error "Failed to delete user with ID $person_id, status code: $response"
     exit 1
   fi
 
-  info "✅ Both users with firstName $fn_1 and $fn_2 found in search results"
+  success "User with ID $person_id successfully deleted"
 }
 
 # --------------------------------------
@@ -390,10 +379,7 @@ rm $temp_values
 
 info "Create secret to store redis connection string"
 
-
 $k delete secret redis-authentication > /dev/null 2>&1
-
-set -e
 
 redis_password=$($k get secret redis-cluster -o jsonpath="{.data.redis-password}" | base64 --decode)
 connection_string="redis-cluster-headless:6379,password=${redis_password},abortConnect=false"
@@ -425,14 +411,24 @@ $k apply -f ./manifests/ui-ingress.yaml
 info "Test UI is reachable"
 validate_status_code "$UI_BASE_PATH/index.html" 200
 
+info "\n
+╔═╗╔═╗╦  ┌┬┐┌─┐┌─┐┌┬┐┌─┐
+╠═╣╠═╝║   │ ├┤ └─┐ │ └─┐
+╩ ╩╩  ╩   ┴ └─┘└─┘ ┴ └─┘"
+
 statement="Lorem ipsum dolor sit amet"
 
-firstname_1=$(random_string 8)
-lastname_1=$(random_string 8)
-create_and_check_user "$firstname_1" "$lastname_1" "$statement"
+first_name_1="first_name_1"
+last_name_1="last_name_1"
+info "Creating user with first name: '$first_name_1', last name: '$last_name_1', personal statement: '$statement'"
+id_1=$(create_and_check_user "$first_name_1" "$last_name_1" "$statement") || exit 1
+success "User successfully created with ID '$id_1'"
 
-firstname_2=$(random_string 8)
-lastname_2=$(random_string 8)
-create_and_check_user "$firstname_2" "$lastname_2" "$statement"
+first_name_2="first_name_2"
+last_name_2="last_name_2"
+info "Creating user with first name: '$first_name_2', last name: '$last_name_2', personal statement: '$statement'"
+id_2=$(create_and_check_user "$first_name_2" "$last_name_2" "$statement") || exit 1
+success "User successfully created with ID '$id_2'"
 
-search_users_with_statement $firstname_1 $firstname_2 $statement
+delete_user "$id_1" || exit 1
+delete_user "$id_2" || exit 1

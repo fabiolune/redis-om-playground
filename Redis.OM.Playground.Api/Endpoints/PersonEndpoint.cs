@@ -17,6 +17,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
         app
             .Tee(a => a.MapPost("/person", Add))
             .Tee(a => a.MapGet("/person/{id}", GetById))
+            .Tee(a => a.MapDelete("/person/{id}", DeleteById))
             .Tee(a => a.MapGet("/person", Get))
             .Tee(a => a.MapGet("/person/search", Search))
             .Tee(a => a.MapGet("/person/list", List))
@@ -34,6 +35,20 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .FirstOrDefaultAsync()
             .ToOptionAsync()
             .MatchAsync(Results.Ok, () => Results.NotFound());
+
+    private Task<IResult> DeleteById([FromRoute] Guid id) =>
+        _provider
+            .RedisCollection<Person>()
+            .Where(p => p.Id == id)
+            .FirstOrDefaultAsync()
+            .ToOptionAsync()
+            .MapAsync(p => p!)
+            .MatchAsync(async p => 
+                { 
+                    await _provider.RedisCollection<Person>().DeleteAsync(p!); 
+                    return Unit.Default.ToOption(); 
+                }, () => Option<Unit>.None().AsTask())
+            .MatchAsync(_ => Results.Accepted(), () => Results.NotFound());
 
     private Task<IResult> Get([FromQuery] string? firstName, [FromQuery] string? lastName) =>
         CreateOptionalPredicate(firstName, lastName)
