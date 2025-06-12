@@ -18,6 +18,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .Tee(a => a.MapPost("/person", Add))
             .Tee(a => a.MapGet("/person/{id}", GetById))
             .Tee(a => a.MapDelete("/person/{id}", DeleteById))
+            .Tee(a => a.MapPut("/person/{id}", Update))
             .Tee(a => a.MapGet("/person", Get))
             .Tee(a => a.MapGet("/person/search", Search))
             .Tee(a => a.MapGet("/person/list", List))
@@ -26,6 +27,12 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
     private Task<IResult> Add([FromBody] Person? person) =>
         person.ToOption()
             .MapAsync(p => p!.Map(pp => _provider.RedisCollection<Person>().InsertAsync(pp, WhenKey.NotExists)))
+            .MatchAsync(r => r.ToEither(Results.Conflict()).Match(Results.Ok, c => c), () => Results.StatusCode(StatusCodes.Status400BadRequest));
+
+    private Task<IResult> Update([FromRoute] Guid id, [FromBody] Person? person) =>
+        person.ToOption()
+            .Map(p => p! with { Id = id})
+            .MapAsync(p => p!.Map(pp => _provider.RedisCollection<Person>().InsertAsync(pp, WhenKey.Exists)))
             .MatchAsync(r => r.ToEither(Results.Conflict()).Match(Results.Ok, c => c), () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
     private Task<IResult> GetById([FromRoute] Guid id) =>

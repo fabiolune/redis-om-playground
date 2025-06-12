@@ -18,6 +18,7 @@ API_BASE_PATH="http://localhost:${CLUSTER_PORT}/${API_PREFIX}"
 UI_BASE_PATH="http://localhost:${CLUSTER_PORT}"
 
 BLUE='\033[1;34m'
+YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
@@ -411,10 +412,11 @@ $k apply -f ./manifests/ui-ingress.yaml
 info "Test UI is reachable"
 validate_status_code "$UI_BASE_PATH/index.html" 200
 
-info "\n
+echo -e "${YELLOW}------------------------
 ╔═╗╔═╗╦  ┌┬┐┌─┐┌─┐┌┬┐┌─┐
 ╠═╣╠═╝║   │ ├┤ └─┐ │ └─┐
-╩ ╩╩  ╩   ┴ └─┘└─┘ ┴ └─┘"
+╩ ╩╩  ╩   ┴ └─┘└─┘ ┴ └─┘
+------------------------${NC}"
 
 statement="Lorem ipsum dolor sit amet"
 
@@ -432,3 +434,9 @@ success "User successfully created with ID '$id_2'"
 
 delete_user "$id_1" || exit 1
 delete_user "$id_2" || exit 1
+
+echo -e "${YELLOW}---------------------
+╦ ╦╦  ╔╦╗┌─┐┌─┐┌┬┐┌─┐
+║ ║║   ║ ├┤ └─┐ │ └─┐
+╚═╝╩   ╩ └─┘└─┘ ┴ └─┘
+---------------------${NC}"
