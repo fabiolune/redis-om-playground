@@ -21,7 +21,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 
 export function PersonList() {
-    console.log("Rendering PersonList");
     const [, setLocation] = useLocation();
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
