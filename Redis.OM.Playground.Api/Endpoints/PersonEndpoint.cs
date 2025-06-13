@@ -22,7 +22,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
             .Tee(a => a.MapGet("/person", Get))
             .Tee(a => a.MapGet("/person/search", Search))
             .Tee(a => a.MapGet("/person/list", List))
-            .Tee((Action<WebApplication>)(a => a.MapGet("/person/count", GetCount)));
+            .Tee(a => a.MapGet("/person/count", GetCount));
 
     private Task<IResult> Add([FromBody] Person? person) =>
         person.ToOption()
