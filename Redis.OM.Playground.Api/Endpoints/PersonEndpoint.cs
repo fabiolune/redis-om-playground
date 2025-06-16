@@ -1,17 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Mediator;
+using Microsoft.AspNetCore.Mvc;
 using Redis.OM.Contracts;
 using Redis.OM.Playground.Api.Infrastructure;
+using Redis.OM.Playground.Api.Messaging;
 using Redis.OM.Playground.Api.Modelling;
 using System.Linq.Expressions;
 using TinyFp;
+using Unit = TinyFp.Unit;
 using TinyFp.Extensions;
 
 namespace Redis.OM.Playground.Api.Endpoints;
 
-public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
+public class PersonEndpoint(IRedisConnectionProvider provider, IMediator mediator) : IEndpoint
 {
     private const int MaxPageSize = 100;
     private readonly IRedisConnectionProvider _provider = provider;
+    private readonly IMediator _mediator = mediator;
 
     public WebApplication Configure(WebApplication app) =>
         app
@@ -27,12 +31,14 @@ public class PersonEndpoint(IRedisConnectionProvider provider) : IEndpoint
     private Task<IResult> Add([FromBody] Person? person) =>
         person.ToOption()
             .MapAsync(p => p!.Map(pp => _provider.RedisCollection<Person>().InsertAsync(pp, WhenKey.NotExists)))
+            .MapAsync(p => p!.Tee(async _ => await _mediator.Send(new UserCreated())))
             .MatchAsync(r => r.ToEither(Results.Conflict()).Match(Results.Ok, c => c), () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
     private Task<IResult> Update([FromRoute] Guid id, [FromBody] Person? person) =>
         person.ToOption()
             .Map(p => p! with { Id = id})
             .MapAsync(p => p!.Map(pp => _provider.RedisCollection<Person>().InsertAsync(pp, WhenKey.Exists)))
+            .MapAsync(p => p!.Tee(async _ => await _mediator.Send(new UserUpdated())))
             .MatchAsync(r => r.ToEither(Results.Conflict()).Match(Results.Ok, c => c), () => Results.StatusCode(StatusCodes.Status400BadRequest));
 
     private Task<IResult> GetById([FromRoute] Guid id) =>

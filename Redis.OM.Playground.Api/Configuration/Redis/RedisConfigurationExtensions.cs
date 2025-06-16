@@ -12,8 +12,9 @@ public static class RedisConfigurationExtensions
         configuration
             .GetConnectionString(name)
             .ToOption(string.IsNullOrWhiteSpace)
-            .Map(c => ConnectionMultiplexer.Connect(c!))
+            .Map(c => ConnectionMultiplexer.Connect(c!).Tee(m => services.AddSingleton<IConnectionMultiplexer>(m)))
             .Map(m => new RedisConnectionProvider(m))
             .Match(services.AddSingleton<IRedisConnectionProvider>,
-                () => throw new InvalidOperationException("Redis connection is not configured."));
+                () => throw new InvalidOperationException("Redis connection is not configured."))
+            .AddSingleton<IDatabaseProvider, DatabaseProvider>();
 }

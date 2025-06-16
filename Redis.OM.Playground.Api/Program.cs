@@ -13,6 +13,7 @@ await WebApplication
     .CreateBuilder()
     .Tee(b =>
         b.Services
+            .AddMediator()
             .AddCors(options => options.AddPolicy(CorsPolicyName, b => b.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()))
             .AddRoutingConfiguration(b.Configuration)
             .AddRedisConfiguration(b.Configuration, "RedisOs")
@@ -20,6 +21,7 @@ await WebApplication
             .AddProblemDetails()
             .AddOpenApi()
             .AddHostedService<IndexCreationService>()
+            .AddHostedService<TimeSeriesInitializerService>()
             .AddEndpointDefinitions(Assembly.GetEntryAssembly()!))
     .AddServiceDefaults()
     .Build()
