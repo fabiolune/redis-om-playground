@@ -6,8 +6,8 @@ using Redis.OM.Playground.Api.Messaging;
 using Redis.OM.Playground.Api.Modelling;
 using System.Linq.Expressions;
 using TinyFp;
-using Unit = TinyFp.Unit;
 using TinyFp.Extensions;
+using Unit = TinyFp.Unit;
 
 namespace Redis.OM.Playground.Api.Endpoints;
 
@@ -36,7 +36,7 @@ public class PersonEndpoint(IRedisConnectionProvider provider, IMediator mediato
 
     private Task<IResult> Update([FromRoute] Guid id, [FromBody] Person? person) =>
         person.ToOption()
-            .Map(p => p! with { Id = id})
+            .Map(p => p! with { Id = id })
             .MapAsync(p => p!.Map(pp => _provider.RedisCollection<Person>().InsertAsync(pp, WhenKey.Exists)))
             .MapAsync(p => p!.Tee(async _ => await _mediator.Send(new UserUpdated())))
             .MatchAsync(r => r.ToEither(Results.Conflict()).Match(Results.Ok, c => c), () => Results.StatusCode(StatusCodes.Status400BadRequest));
@@ -56,10 +56,10 @@ public class PersonEndpoint(IRedisConnectionProvider provider, IMediator mediato
             .FirstOrDefaultAsync()
             .ToOptionAsync()
             .MapAsync(p => p!)
-            .MatchAsync(async p => 
-                { 
-                    await _provider.RedisCollection<Person>().DeleteAsync(p!); 
-                    return Unit.Default.ToOption(); 
+            .MatchAsync(async p =>
+                {
+                    await _provider.RedisCollection<Person>().DeleteAsync(p!);
+                    return Unit.Default.ToOption();
                 }, () => Option<Unit>.None().AsTask())
             .MatchAsync(_ => Results.Accepted(), () => Results.NotFound());
 
@@ -94,9 +94,9 @@ public class PersonEndpoint(IRedisConnectionProvider provider, IMediator mediato
             .ToOption(t => t.page <= 0 || t.pageSize <= 0 || pageSize > MaxPageSize)
             .Map(t => _provider.RedisCollection<Person>(t.pageSize).Skip((page - 1) * pageSize).Take(pageSize))
             .MapAsync(c => c.ToListAsync())
-            .MatchAsync(async l => 
+            .MatchAsync(async l =>
                 new PaginatedDataContainer<Person>(l, page, pageSize, await Count())
-                    .ToOption(), 
+                    .ToOption(),
                 Option<PaginatedDataContainer<Person>>.None)
             .MatchAsync(Results.Ok, () => Results.StatusCode(StatusCodes.Status400BadRequest));
 

@@ -15,8 +15,7 @@ public sealed class UserCreatedHandler(IDatabaseProvider provider) : IRequestHan
 
     public ValueTask<Unit> Handle(UserCreated request, CancellationToken cancellationToken) =>
         _db.TS()
-            .IncrByAsync(MessagingConstants.UserCreatedKey, 1)
-            //.AddAsync(MessagingConstants.UserCreatedKey, new TsAddParamsBuilder().AddTimestamp(DateTime.UtcNow).AddValue(1).build())
+            .AddAsync(MessagingConstants.UserCreatedKey, new TsAddParamsBuilder().AddTimestamp(DateTime.UtcNow).AddValue(1).build())
             .ToTaskUnit<Unit>()
             .Map(t => new ValueTask<Unit>(t));
 }
