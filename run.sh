@@ -447,3 +447,6 @@ echo -e "${YELLOW}---------------------
 ║ ║║   ║ ├┤ └─┐ │ └─┐
 ╚═╝╩   ╩ └─┘└─┘ ┴ └─┘
 ---------------------${NC}"
+
+# this only works when using WSL in windows
+cmd.exe /C start http://localhost 2> /dev/null

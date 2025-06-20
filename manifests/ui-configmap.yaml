@@ -6,6 +6,6 @@ data:
     {
       "apiBaseUrl": "<apibaseurl>",
       "apiSocketUrl": "<apisocketurl>",
-      "graphQlPath": "/graphql",
+      "graphQlPath": "/graphql"
     }
 kind: ConfigMap
