@@ -4,15 +4,21 @@ import { storage } from "./storage";
 import { insertPersonSchema } from "@shared/schema";
 import { z } from "zod";
 
+const apiBaseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+const apiSocketUrl = process.env.API_SOCKET_URL || `ws://localhost:${process.env.PORT || 5000}`;
+const graphQlPath = process.env.GRAPHQL_PATH || '/graphql';
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configuration endpoint
-  app.get("/configuration", async (req, res) => {
+  app.get("/configuration", async (_, res) => {
     try {
-      const apiBaseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
       res.json({
-        apiBaseUrl: apiBaseUrl
+        apiBaseUrl: apiBaseUrl,
+        apiSocketUrl: apiSocketUrl,
+        graphQlPath: graphQlPath
       });
     } catch (error) {
+      console.error("Error fetching configuration:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

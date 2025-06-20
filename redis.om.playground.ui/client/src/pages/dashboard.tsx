@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useLocation, Route, Switch } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import Analytics from "./analytics";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -242,19 +243,7 @@ export default function Dashboard() {
               </Route>
 
               <Route path="/analytics">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                        Analytics Dashboard
-                      </h3>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Advanced analytics features are coming soon.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Analytics />
               </Route>
 
               <Route>

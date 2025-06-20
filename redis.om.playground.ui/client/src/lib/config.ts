@@ -1,5 +1,7 @@
 interface Config {
     apiBaseUrl: string;
+    apiSocketUrl: string;
+    graphQlPath: string;
 }
 
 let cachedConfig: Config | null = null;
@@ -28,7 +30,9 @@ export async function getConfig(): Promise<Config> {
         console.error("Failed to load configuration, using fallback:", error);
         // Fallback to current origin if config fails
         const fallbackConfig: Config = {
-            apiBaseUrl: window.location.origin
+            apiBaseUrl: window.location.origin,
+            apiSocketUrl: `ws://${window.location.host}`,
+            graphQlPath: `/graphql`
         };
         cachedConfig = fallbackConfig;
         return fallbackConfig;
