@@ -1,98 +1,3 @@
-// import React from "react";
-// import { useSubscription, gql } from "@apollo/client";
-// import { BarChart3 } from "lucide-react";
-// import { Card, CardContent } from "@/components/ui/card";
-// import {
-//   LineChart,
-//   Line,
-//   XAxis,
-//   YAxis,
-//   Tooltip,
-//   CartesianGrid,
-//   ResponsiveContainer,
-// } from "recharts";
-
-// // Type definitions
-// interface DataPoint {
-//   timestamp: number;
-//   value: number;
-// }
-
-// interface UserCreatedData {
-//   values: DataPoint[];
-// }
-
-// interface SubscriptionData {
-//   userCreated: UserCreatedData;
-// }
-
-// interface ChartDataPoint extends DataPoint {
-//   time: string;
-// }
-
-// // GraphQL subscription
-// const USER_CREATED_SUBSCRIPTION = gql`
-//   subscription {
-//     userCreated {
-//       values {
-//         timestamp
-//         value
-//       }
-//     }
-//   }
-// `;
-
-// export default function Analytics() {
-
-
-//   // const { data, loading, error } = useSubscription<SubscriptionData>(USER_CREATED_SUBSCRIPTION);
-
-//   // if (loading) return <div>Loading...</div>;
-//   // if (error) return <div>Error: {error.message}</div>;
-
-//   const data: SubscriptionData = {
-//     userCreated: {
-//       values: [
-//         { timestamp: 1750256460000, value: 10 },
-//         { timestamp: 1750256465000, value: 20 },
-//         { timestamp: 1750256470000, value: 30 },
-//       ],
-//     },
-//   }; // Mock data for demonstration
-
-
-//   // Extract and format data for the chart
-//   const chartData: ChartDataPoint[] =
-//     data?.userCreated?.values?.map((item: DataPoint) => ({
-//       ...item,
-//       // Format timestamp for display
-//       time: new Date(item.timestamp).toLocaleTimeString(),
-//     })) || [];
-
-//   return (
-
-//     <Card>
-//       <CardContent className="pt-6">
-//         <div className="text-center">
-//           <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-//           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-//             Analytics Dashboard
-//           </h3>
-//         </div>
-//         <ResponsiveContainer width="100%" height={300}>
-//           <LineChart data={chartData}>
-//             <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-//             <XAxis dataKey="time" />
-//             <YAxis />
-//             <Tooltip />
-//             <Line type="monotone" dataKey="value" stroke="#8884d8" />
-//           </LineChart>
-//         </ResponsiveContainer>
-//       </CardContent>
-//     </Card>
-//   );
-// }
-
 import { Card, CardContent } from '@/components/ui/card';
 import { getConfig } from '@/lib/config';
 import React, { useState, useEffect, useRef } from 'react';
@@ -142,7 +47,7 @@ const RealtimeChart: React.FC = () => {
             }
         }`,
         variables: {
-            aggregation: 'ONE_MINUTE'
+            aggregation: 'RAW'
         }
     };
 
@@ -248,69 +153,27 @@ const RealtimeChart: React.FC = () => {
         };
     }, []);
 
-    const getStatusColor = (): string => {
-        switch (connectionStatus) {
-            case 'Connected': return 'text-green-600';
-            case 'Connecting': return 'text-yellow-600';
-            case 'Error': return 'text-red-600';
-            case 'Disconnected': return 'text-gray-600';
-            case 'Completed': return 'text-blue-600';
-            default: return 'text-gray-600';
-        }
-    };
-
     return (
 
         <Card>
             <CardContent className="pt-6">
-
-                <div className="p-6 max-w-6xl mx-auto bg-white">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Real-time GraphQL Subscription Chart</h1>
-
-                    {/* Connection Controls */}
-                    <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                        <div className="flex flex-col gap-4">
-
-                            <div className="flex items-center gap-4">
-                                <span className="font-medium text-gray-700">Status:</span>
-                                <span className={`font-semibold ${getStatusColor()}`}>
-                                    {connectionStatus}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Chart */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                            Users created ({data.length} points)
-                        </h2>
-
-                        {data.length === 0 ? (
-                            <div className="h-96 flex items-center justify-center text-gray-500">
-                                <div className="text-center">
-                                    <p className="text-lg mb-2">No data available</p>
-                                    <p className="text-sm">Connect to your GraphQL subscription or simulate data to see the chart</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-96">
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <LineChart data={data}>
-                                        <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-                                        <XAxis dataKey="time" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Line type="monotone" dataKey="value" stroke="#8884d8" />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
-                    </div>
-
+                <div className="text-center">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                        Analytics Dashboard
+                    </h3>
                 </div>
+                <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={data.slice(0, 100)}>
+                        {/* <CartesianGrid stroke="#eee" strokeDasharray="5 5" /> */}
+                        <XAxis dataKey="time" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="value" stroke="#8884d8" />
+                    </LineChart>
+                </ResponsiveContainer>
             </CardContent>
         </Card>
+
 
     );
 };

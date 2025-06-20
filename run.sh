@@ -14,6 +14,7 @@ CLUSTER_NAME=test-kind
 
 API_PREFIX=person-api
 API_BASE_PATH="http://localhost:${CLUSTER_PORT}/${API_PREFIX}"
+API_WS_URL="ws://localhost:${CLUSTER_PORT}/${API_PREFIX}"
 
 UI_BASE_PATH="http://localhost:${CLUSTER_PORT}"
 
@@ -405,8 +406,7 @@ validate_status_code "$API_BASE_PATH/internal/description" 200
 
 info "Install UI"
 
-
-cat ./manifests/ui-configmap.yaml | sed 's|<apibaseurl>|'${API_BASE_PATH}'|g' | $k apply -f -
+cat ./manifests/ui-configmap.yaml | sed 's|<apibaseurl>|'${API_BASE_PATH}'|g' | sed 's|<apisocketurl>|'${API_WS_URL}'|g' | $k apply -f -
 cat ./manifests/ui-deployment.yaml | sed 's|<timestamp>|'${timestamp}'|g' | $k apply -f -
 $k apply -f ./manifests/ui-service.yaml
 $k apply -f ./manifests/ui-ingress.yaml

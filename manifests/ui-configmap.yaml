@@ -4,6 +4,8 @@ metadata:
 data:
   configuration: |
     {
-      "apiBaseUrl": "<apibaseurl>"
+      "apiBaseUrl": "<apibaseurl>",
+      "apiSocketUrl": "<apisocketurl>",
+      "graphQlPath": "/graphql",
     }
 kind: ConfigMap
